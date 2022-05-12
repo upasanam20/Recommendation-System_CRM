@@ -1,0 +1,49 @@
+## ASSOCIATION RULES
+## Group F: Cold Cereal
+
+install.packages("arules")
+library(arules)
+
+install.packages("arulesViz")
+library(arulesViz)
+
+if(sessionInfo()['basePkgs']=="dplyr" | sessionInfo()['otherPkgs']=="dplyr"){
+  detach(package:dplyr, unload=TRUE)
+}
+
+library(plyr)
+
+Transact.df<-read.csv("C:\\Users\\dell\\Desktop\\747 CRM\\747CRM\\Agg2010.csv",stringsAsFactors=FALSE)
+str(Transact.df)
+Transact.df <- Transact.df[order(Transact.df$panid),]
+View(Transact.df)
+
+#  you will use "c(panid, week, minute)" to aggregate to a shopping trip by that customer.
+
+Transact_item <- ddply(Transact.df,c("panid","week","minute"), 
+                       function(df)paste(df$L2, collapse = ","))
+View(Transact_item)
+
+# Get rid of extraneous info (which implicitly treats all trips as independent)
+Transact_item$panid <- NULL
+Transact_item$week <- NULL
+Transact_item$minute <- NULL
+View(Transact_item)
+
+# Save processed transactions
+write.csv(Transact_item,"C:\\Users\\dell\\Desktop\\747 CRM\\747CRM\\Agg2010_Transact_item.csv", quote = FALSE, row.names = TRUE)
+
+# Read processed transactions
+Transact_tx = read.transactions(file="C:\\Users\\dell\\Desktop\\747 CRM\\747CRM\\Agg2010_Transact_item.csv", rm.duplicates= TRUE, format="basket",sep=",",cols=1);
+
+# Strip quotes if they exist
+Transact_tx@itemInfo$labels <- gsub("\"","",Transact_tx@itemInfo$labels)
+
+# Create rules - Note these two parameters sup = support and conf = confidence can be adjusted to get more or fewer rules
+Transact_rules <- apriori(Transact_tx,parameter = list(sup = 0.001, conf = 0.25,target="rules"));  #set threshold 
+
+saverules<-as(Transact_rules,"data.frame")
+View(saverules) # with ... people buy A will in ...% (confidence) buy B
+
+# Save Rules
+write.csv(saverules,"C:\\Users\\dell\\Desktop\\747 CRM\\747CRM\\Agg2010_Rules.csv", row.names = TRUE)
