@@ -40,7 +40,7 @@ Transact_tx = read.transactions(file="C:\\Users\\dell\\Desktop\\747 CRM\\747CRM\
 Transact_tx@itemInfo$labels <- gsub("\"","",Transact_tx@itemInfo$labels)
 
 # Create rules - Note these two parameters sup = support and conf = confidence can be adjusted to get more or fewer rules
-Transact_rules <- apriori(Transact_tx,parameter = list(sup = 0.001, conf = 0.25,target="rules"));  #set threshold 
+Transact_rules <- apriori(Transact_tx,parameter = list(sup = 0.001, conf = 0.50,target="rules"));  #set threshold 
 
 saverules<-as(Transact_rules,"data.frame")
 View(saverules) # with ... people buy A will in ...% (confidence) buy B
